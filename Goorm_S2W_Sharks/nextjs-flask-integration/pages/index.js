@@ -11,7 +11,7 @@ export default function Home() {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const socket = io("ws://3.38.154.124:5001");
+    const socket = io("ws://127.0.0.1:5001");
     socketRef.current = socket;
 
     socket.on("scanResult", (data) => {

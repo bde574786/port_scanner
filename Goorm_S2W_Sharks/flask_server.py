@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import socket
 import ssl
 from flask_socketio import SocketIO
@@ -37,7 +37,7 @@ def banner_grabbing(ip, port):
     finally:
         s.close()
 
-def scan_port(target_ip, port):
+def scan_port(target_ip, port, session_id):
     source_port = RandShort()
     packet = IP(dst=target_ip) / TCP(sport=source_port, dport=port, flags="S")
     response = sr1(packet, timeout=timeout, verbose=0)
@@ -47,10 +47,10 @@ def scan_port(target_ip, port):
             result = banner_grabbing(target_ip, port)
             if result:
                 port, banner = result
-                socketio.emit('scanResult', {'port': port, 'banner': banner})
+                socketio.emit('scanResult', {'port': port, 'banner': banner}, room=session_id)
                 print(f"[+] Port {port} is open: {banner}")
             else:
-                socketio.emit('scanResult', {'port': port, 'banner': None})
+                socketio.emit('scanResult', {'port': port, 'banner': None}, room=session_id)
                 print(f"[+] Port {port} is open but no banner retrieved.")
     else:
         print(f"[-] Scanning port {port}...")
@@ -59,10 +59,12 @@ def scan_port(target_ip, port):
 @socketio.on('startScan')
 def handle_start_scan(json):
     target_ip = json['target_ip']
-    ports = list(range(1, 65536))
+    ports = list(range(1, 65535))
+    session_id = request.sid
+
     print(f"[+] Starting scan on {target_ip}")
     for port in ports:
-        socketio.start_background_task(scan_port, target_ip, port)
+        socketio.start_background_task(scan_port, target_ip, port, session_id)
     print("[+] Scan completed!")
 
 if __name__ == '__main__':
