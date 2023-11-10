@@ -48,7 +48,7 @@ export default function Home() {
         target_ip: ip
       });
     } else {
-      console.error('Socket not connected.');
+      console.error('Socket is not connected.');
     }
   };
 
@@ -64,7 +64,6 @@ export default function Home() {
           type="text"
           value={ip}
           onChange={(e) => setIp(e.target.value)}
-          placeholder="43.200.177.222"
         />
         <button onClick={handleScan}>{isLoading ? 'Loading...' : 'START'}</button>
       </div>
